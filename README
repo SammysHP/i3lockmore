@@ -17,3 +17,5 @@ This is a wrapper for i3lock that adds additional functionality:
         value of the DPMS timeout after the screen was unlocked.
 
 All other arguments are passed to i3lock.
+
+Dependencies: i3lock, bash, imagemagick, xset
