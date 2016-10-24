@@ -10,6 +10,9 @@ This is a wrapper for i3lock that adds additional functionality:
         (It scales down the background to "scalefactor" percent of the original
         screen content).
 
+    --grayscale
+        Convert the background into grayscale. Requires --pixelate.
+
     --dpms timeout
         Uses DPMS to turn the screen off after "timeout" seconds of inactivity.
 

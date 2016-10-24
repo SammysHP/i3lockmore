@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 function printhelp {
 cat <<- EOF
 i3lockmore by Sven Greiner <sven@sammyshp.de>
@@ -13,6 +14,9 @@ This is a wrapper for i3lock that adds additional functionality:
         of 1 results in large pixels while a value of 100 has no effect.
         (It scales down the background to "scalefactor" percent of the original
         screen content).
+
+    --grayscale
+        Convert the background into grayscale. Requires --pixelate.
 
     --dpms timeout
         Uses DPMS to turn the screen off after "timeout" seconds of inactivity.
@@ -32,6 +36,7 @@ DPMS_TIMEOUT=5
 declare -a PARAMS
 DPMS_OLD=
 BACKGROUND=
+GRAYSCALE=
 
 
 while [[ $# -gt 0 ]]; do
@@ -42,6 +47,11 @@ while [[ $# -gt 0 ]]; do
                 PIXELATE_SCALEFACTOR="$2"
                 shift
             fi
+            ;;
+
+        --grayscale)
+            GRAYSCALE="-colorspace gray"
+            shift
             ;;
 
         --dpms)
@@ -89,7 +99,7 @@ if [[ "$USE_PIXELATE" == true ]]; then
     BACKGROUND=$(mktemp /tmp/i3lockmore-background.XXXXX)
     import -window root jpeg:"$BACKGROUND"
     SIZE=$(identify -format "%[fx:w]x%[fx:h]" "$BACKGROUND")
-    convert -scale $PIXELATE_SCALEFACTOR% -sample $SIZE\! jpeg:"$BACKGROUND" -quality 11 png24:"$BACKGROUND"
+    convert jpeg:"$BACKGROUND" -scale $PIXELATE_SCALEFACTOR% $GRAYSCALE -sample $SIZE\! -quality 11 png24:"$BACKGROUND"
 
     PARAMS+=( -i "$BACKGROUND" )
 fi
