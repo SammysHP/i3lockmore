@@ -19,7 +19,10 @@ This is a wrapper for i3lock that adds additional functionality:
     <dd>
         <p>Convert the background into grayscale. Requires --pixelate.</p>
     </dd>
-
+    <dt>--resize-image /path/to/image</dt>
+    <dd>
+        <p>simply use a big image and resize it to the current screen size</p>
+    </dd>
     <dt>--dpms timeout</dt>
     <dd>
         <p>Uses DPMS to turn the screen off after "timeout" seconds of inactivity.</p>
