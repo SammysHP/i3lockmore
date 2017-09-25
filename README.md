@@ -8,13 +8,11 @@ This is a wrapper for i3lock that adds additional functionality:
     <dt>--pixelate [scalefactor]</dt>
     <dd>
         <p>Uses the pixelated screen content as the background of the lockscreen.</p>
-
         <p>The optional value "scalefactor" controls the size of the pixels. A value
         of 1 results in large pixels while a value of 100 has no effect.
         (It scales down the background to "scalefactor" percent of the original
         screen content).</p>
     </dd>
-
     <dt>--grayscale</dt>
     <dd>
         <p>Convert the background into grayscale. Requires --pixelate.</p>
@@ -26,7 +24,6 @@ This is a wrapper for i3lock that adds additional functionality:
     <dt>--dpms timeout</dt>
     <dd>
         <p>Uses DPMS to turn the screen off after "timeout" seconds of inactivity.</p>
-
         <p>CAUTION: This sets --nofork (see "man i3lock") to restore the previous
         value of the DPMS timeout after the screen was unlocked.</p>
     </dd>
