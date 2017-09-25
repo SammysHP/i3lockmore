@@ -114,11 +114,27 @@ if [[ "$USE_PIXELATE" == true ]]; then
     PARAMS+=( -i "$BACKGROUND" )
 fi
 
+
 if [[ "$USE_IMAGE" == true ]]; then
     BACKGROUND=$(mktemp /tmp/i3lockmore-background.XXXXX)
-    SCREEN_SIZE=$(xrandr |grep \* |awk '{print $1}')
-    convert "$IMAGE_FILE" -resize $SCREEN_SIZE\! png24:"$BACKGROUND"
-    PARAMS+=( -i "$BACKGROUND" )
+    SCREEN_SIZE=($(xrandr |grep \* |awk '{print $1}'))
+    COUNT=0
+    convert "$IMAGE_FILE" -resize ${SCREEN_SIZE[0]} png24:"$BACKGROUND"
+    while [ $COUNT -le $(( ${#SCREEN_SIZE[@]} -1 )) ]
+    do
+        if [ ${SCREEN_SIZE[$COUNT]} != ${SCREEN_SIZE[0]} ]
+        then
+            cat <<- EOF
+ERROR: Dualscreen setup with different resolutions.
+       Use the same resolution on both screen to use this feature.
+       Starting i3lock without changing resolution...
+EOF
+            PARAMS+=( -i $IMAGE_FILE)
+        else
+            PARAMS+=( -i "$BACKGROUND" )
+        fi
+        COUNT=$(($COUNT + 1 ))
+    done
 fi
 
 
