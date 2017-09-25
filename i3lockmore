@@ -18,6 +18,9 @@ This is a wrapper for i3lock that adds additional functionality:
     --grayscale
         Convert the background into grayscale. Requires --pixelate.
 
+    --resize-image /path/to/image
+        simply use a big image and resize it to the current screen size
+
     --dpms timeout
         Uses DPMS to turn the screen off after "timeout" seconds of inactivity.
 
@@ -32,6 +35,7 @@ EOF
 USE_PIXELATE=false
 PIXELATE_SCALEFACTOR=4
 USE_DPMS=false
+USE_IMAGE=false
 DPMS_TIMEOUT=5
 declare -a PARAMS
 DPMS_OLD=
@@ -51,6 +55,12 @@ while [[ $# -gt 0 ]]; do
 
         --grayscale)
             GRAYSCALE="-colorspace gray"
+            shift
+            ;;
+
+        --resize-image)
+            USE_IMAGE=true
+            IMAGE_FILE="$2"
             shift
             ;;
 
@@ -82,7 +92,7 @@ done
 
 
 function finish {
-    if [[ "$USE_PIXELATE" == true ]]; then
+    if [[ "$USE_PIXELATE" == true ]] || [[ "$USE_IMAGE" == true ]]; then
         if [[ "$BACKGROUND" =~ ^/tmp/i3lockmore-background\.[a-zA-Z0-9]+$ ]]; then
             rm "$BACKGROUND"
         fi;
@@ -102,6 +112,29 @@ if [[ "$USE_PIXELATE" == true ]]; then
     convert jpeg:"$BACKGROUND" -scale $PIXELATE_SCALEFACTOR% $GRAYSCALE -sample $SIZE\! -quality 11 png24:"$BACKGROUND"
 
     PARAMS+=( -i "$BACKGROUND" )
+fi
+
+
+if [[ "$USE_IMAGE" == true ]]; then
+    BACKGROUND=$(mktemp /tmp/i3lockmore-background.XXXXX)
+    SCREEN_SIZE=($(xrandr |grep \* |awk '{print $1}'))
+    COUNT=0
+    convert "$IMAGE_FILE" -resize ${SCREEN_SIZE[0]} png24:"$BACKGROUND"
+    while [ $COUNT -le $(( ${#SCREEN_SIZE[@]} -1 )) ]
+    do
+        if [ ${SCREEN_SIZE[$COUNT]} != ${SCREEN_SIZE[0]} ]
+        then
+            cat <<- EOF
+ERROR: Dualscreen setup with different resolutions.
+       Use the same resolution on both screen to use this feature.
+       Starting i3lock without changing resolution...
+EOF
+            PARAMS+=( -i $IMAGE_FILE)
+        else
+            PARAMS+=( -i "$BACKGROUND" )
+        fi
+        COUNT=$(($COUNT + 1 ))
+    done
 fi
 
 
