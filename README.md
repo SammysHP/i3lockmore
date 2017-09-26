@@ -62,6 +62,7 @@ Following programs must be installed:
 - bash
 - imagemagick
 - xset
+- xrandr
 
 ### Package
 
