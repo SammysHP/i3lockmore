@@ -79,7 +79,6 @@ while [[ $# -gt 0 ]]; do
 
         --grayscale)
             GRAYSCALE="-colorspace gray"
-            shift
             ;;
 
         --dpms)
