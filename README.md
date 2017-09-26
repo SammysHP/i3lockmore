@@ -14,14 +14,27 @@ This is a wrapper for i3lock that adds additional functionality:
         screen content).</p>
     </dd>
     <dt>--blur [scalefactor]</dt>
+    <dd>
         <p>Uses the blurred screen content as the background of the lockscreen.</p>
         <p>The optional value "scalefactor" controls the amount of blurring. A value
         of 1 results in extreme blurring while a value of 100 has no effect.
         (It scales down the background to "scalefactor" percent of the original
         screen content).</p>
+    </dd>
+    <dt>--image-fill path</dt>
+    <dd>
+        <p>Fills each screen with the image in <path>. Can be combined with
+        --pixelate and --blur. Overrides --image-maximize.</p>
+    </dd>
+    <dt>--image-maximize path</dt>
+    <dd>
+        <p>Maximizes the image in <path> over all screens. Can be combined with
+        --pixelate and --blur. Overrides --image-fill.</p>
+    </dd>
     <dt>--grayscale</dt>
     <dd>
-        <p>Convert the background into grayscale. Requires --pixelate or --blur.</p>
+        <p>Converts the background into grayscale. Requires --pixelate, --blur,
+        --image-fill or --image-maximize.</p>
     </dd>
     <dt>--dpms timeout</dt>
     <dd>

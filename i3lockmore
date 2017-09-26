@@ -11,6 +11,9 @@ BACKGROUND=
 GRAYSCALE=
 USE_BLUR=false
 BLUR_FACTOR=4
+USE_IMAGE_FILL=false
+USE_IMAGE_MAXIMIZE=false
+IMAGE=
 
 
 function print_help {
@@ -35,8 +38,17 @@ This is a wrapper for i3lock that adds additional functionality:
         (It scales down the background to "scalefactor" percent of the original
         screen content).
 
+    --image-fill path
+        Fills each screen with the image in <path>. Can be combined with
+        --pixelate and --blur. Overrides --image-maximize.
+
+    --image-maximize path
+        Maximizes the image in <path> over all screens. Can be combined with
+        --pixelate and --blur. Overrides --image-fill.
+
     --grayscale
-        Convert the background into grayscale. Requires --pixelate or --blur.
+        Converts the background into grayscale. Requires --pixelate, --blur,
+        --image-fill or --image-maximize.
 
     --dpms timeout
         Uses DPMS to turn the screen off after "timeout" seconds of inactivity.
@@ -49,13 +61,26 @@ EOF
 }
 
 
+function get_background_file {
+    BACKGROUND=$(mktemp /tmp/i3lockmore-background.XXXXX)
+    PARAMS+=( -i "$BACKGROUND" )
+}
+
+
 function make_screenshot {
     if [[ -z "$BACKGROUND" ]]; then
-        BACKGROUND=$(mktemp /tmp/i3lockmore-background.XXXXX)
+        get_background_file
         import -window root jpeg:"$BACKGROUND"
-
-        PARAMS+=( -i "$BACKGROUND" )
     fi
+}
+
+
+function check_file_exists {
+    if [[ ! -f "$1" ]]; then
+        echo "File \"$1\" does not exist!"
+        return 1
+    fi
+    return 0
 }
 
 
@@ -74,6 +99,28 @@ while [[ $# -gt 0 ]]; do
             if [[ $# -gt 1 && "$2" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
                 BLUR_FACTOR="$2"
                 shift
+            fi
+            ;;
+
+        --image-fill)
+            if [[ $# -gt 1 && "$2" =~ ^[^-].*$ ]]; then
+                USE_IMAGE_FILL=true
+                IMAGE="$2"
+                shift
+            else
+                echo "Usage: --image-fill path"
+                exit 1
+            fi
+            ;;
+
+        --image-maximize)
+            if [[ $# -gt 1 && "$2" =~ ^[^-].*$ ]]; then
+                USE_IMAGE_MAXIMIZE=true
+                IMAGE="$2"
+                shift
+            else
+                echo "Usage: --image-maximize path"
+                exit 1
             fi
             ;;
 
@@ -120,19 +167,54 @@ function finish {
 trap finish EXIT
 
 
+if [[ "$USE_IMAGE_FILL" == true ]]; then
+    get_background_file
+
+    screenarea=$(xrandr --current | grep -oP '(?<=current )\d+ x \d+')
+    screenarea=${screenarea// /}
+    screens=( $(xrandr --current | grep -oP '\d+x\d+\+\d+\+\d+') )
+
+    convert -size $screenarea xc:black $GRAYSCALE -quality 11 png24:"$BACKGROUND"
+
+    if check_file_exists "$IMAGE"; then
+        for screen in "${screens[@]}"; do
+            convert "$BACKGROUND" \
+                "$IMAGE" -gravity center -resize ${screen%%+*}^ -gravity west -geometry +${screen#*+} -composite \
+                $GRAYSCALE -quality 11 png24:"$BACKGROUND"
+        done
+    fi
+fi
+
+
+if [[ "$USE_IMAGE_MAXIMIZE" == true ]]; then
+    get_background_file
+
+    screenarea=$(xrandr --current | grep -oP '(?<=current )\d+ x \d+')
+    screenarea=${screenarea// /}
+
+    if check_file_exists "$IMAGE"; then
+        convert -size $screenarea xc:black \
+            "$IMAGE" -gravity center -resize $screenarea^ -composite \
+            $GRAYSCALE -quality 11 png24:"$BACKGROUND"
+    else
+        convert -size $screenarea xc:black $GRAYSCALE -quality 11 png24:"$BACKGROUND"
+    fi
+fi
+
+
 if [[ "$USE_BLUR" == true ]]; then
     make_screenshot
 
-    SIZE=$(identify -format "%[fx:w]x%[fx:h]" "$BACKGROUND")
-    convert jpeg:"$BACKGROUND" -scale $BLUR_FACTOR% $GRAYSCALE -resize $SIZE\! -quality 11 png24:"$BACKGROUND"
+    size=$(identify -format "%[fx:w]x%[fx:h]" "$BACKGROUND")
+    convert "$BACKGROUND" -scale $BLUR_FACTOR% $GRAYSCALE -resize $size\! -quality 11 png24:"$BACKGROUND"
 fi
 
 
 if [[ "$USE_PIXELATE" == true ]]; then
     make_screenshot
 
-    SIZE=$(identify -format "%[fx:w]x%[fx:h]" "$BACKGROUND")
-    convert jpeg:"$BACKGROUND" -scale $PIXELATE_SCALEFACTOR% $GRAYSCALE -sample $SIZE\! -quality 11 png24:"$BACKGROUND"
+    size=$(identify -format "%[fx:w]x%[fx:h]" "$BACKGROUND")
+    convert "$BACKGROUND" -scale $PIXELATE_SCALEFACTOR% $GRAYSCALE -sample $size\! -quality 11 png24:"$BACKGROUND"
 fi
 
 
