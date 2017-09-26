@@ -9,6 +9,8 @@ declare -a PARAMS
 DPMS_OLD=
 BACKGROUND=
 GRAYSCALE=
+USE_BLUR=false
+BLUR_FACTOR=4
 
 
 function print_help {
@@ -25,8 +27,16 @@ This is a wrapper for i3lock that adds additional functionality:
         (It scales down the background to "scalefactor" percent of the original
         screen content).
 
+    --blur [scalefactor]
+        Uses the blurred screen content as the background of the lockscreen.
+
+        The optional value "scalefactor" controls the amount of blurring. A value
+        of 1 results in extreme blurring while a value of 100 has no effect.
+        (It scales down the background to "scalefactor" percent of the original
+        screen content).
+
     --grayscale
-        Convert the background into grayscale. Requires --pixelate.
+        Convert the background into grayscale. Requires --pixelate or --blur.
 
     --dpms timeout
         Uses DPMS to turn the screen off after "timeout" seconds of inactivity.
@@ -43,6 +53,8 @@ function make_screenshot {
     if [[ -z "$BACKGROUND" ]]; then
         BACKGROUND=$(mktemp /tmp/i3lockmore-background.XXXXX)
         import -window root jpeg:"$BACKGROUND"
+
+        PARAMS+=( -i "$BACKGROUND" )
     fi
 }
 
@@ -53,6 +65,14 @@ while [[ $# -gt 0 ]]; do
             USE_PIXELATE=true
             if [[ $# -gt 1 && "$2" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
                 PIXELATE_SCALEFACTOR="$2"
+                shift
+            fi
+            ;;
+
+        --blur)
+            USE_BLUR=true
+            if [[ $# -gt 1 && "$2" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+                BLUR_FACTOR="$2"
                 shift
             fi
             ;;
@@ -101,13 +121,19 @@ function finish {
 trap finish EXIT
 
 
+if [[ "$USE_BLUR" == true ]]; then
+    make_screenshot
+
+    SIZE=$(identify -format "%[fx:w]x%[fx:h]" "$BACKGROUND")
+    convert jpeg:"$BACKGROUND" -scale $BLUR_FACTOR% $GRAYSCALE -resize $SIZE\! -quality 11 png24:"$BACKGROUND"
+fi
+
+
 if [[ "$USE_PIXELATE" == true ]]; then
     make_screenshot
 
     SIZE=$(identify -format "%[fx:w]x%[fx:h]" "$BACKGROUND")
     convert jpeg:"$BACKGROUND" -scale $PIXELATE_SCALEFACTOR% $GRAYSCALE -sample $SIZE\! -quality 11 png24:"$BACKGROUND"
-
-    PARAMS+=( -i "$BACKGROUND" )
 fi
 
 
