@@ -1,7 +1,17 @@
 #!/bin/bash
 
 
-function printhelp {
+USE_PIXELATE=false
+PIXELATE_SCALEFACTOR=4
+USE_DPMS=false
+DPMS_TIMEOUT=5
+declare -a PARAMS
+DPMS_OLD=
+BACKGROUND=
+GRAYSCALE=
+
+
+function print_help {
 cat <<- EOF
 i3lockmore by Sven Greiner <sven@sammyshp.de>
 
@@ -29,14 +39,12 @@ EOF
 }
 
 
-USE_PIXELATE=false
-PIXELATE_SCALEFACTOR=4
-USE_DPMS=false
-DPMS_TIMEOUT=5
-declare -a PARAMS
-DPMS_OLD=
-BACKGROUND=
-GRAYSCALE=
+function make_screenshot {
+    if [[ -z "$BACKGROUND" ]]; then
+        BACKGROUND=$(mktemp /tmp/i3lockmore-background.XXXXX)
+        import -window root jpeg:"$BACKGROUND"
+    fi
+}
 
 
 while [[ $# -gt 0 ]]; do
@@ -67,7 +75,7 @@ while [[ $# -gt 0 ]]; do
             ;;
 
         --morehelp)
-            printhelp
+            print_help
             exit
             ;;
 
@@ -82,10 +90,8 @@ done
 
 
 function finish {
-    if [[ "$USE_PIXELATE" == true ]]; then
-        if [[ "$BACKGROUND" =~ ^/tmp/i3lockmore-background\.[a-zA-Z0-9]+$ ]]; then
-            rm "$BACKGROUND"
-        fi;
+    if [[ "$BACKGROUND" =~ ^/tmp/i3lockmore-background\.[a-zA-Z0-9]+$ ]]; then
+        rm "$BACKGROUND"
     fi
 
     if [[ "$USE_DPMS" == true ]]; then
@@ -96,8 +102,8 @@ trap finish EXIT
 
 
 if [[ "$USE_PIXELATE" == true ]]; then
-    BACKGROUND=$(mktemp /tmp/i3lockmore-background.XXXXX)
-    import -window root jpeg:"$BACKGROUND"
+    make_screenshot
+
     SIZE=$(identify -format "%[fx:w]x%[fx:h]" "$BACKGROUND")
     convert jpeg:"$BACKGROUND" -scale $PIXELATE_SCALEFACTOR% $GRAYSCALE -sample $SIZE\! -quality 11 png24:"$BACKGROUND"
 
