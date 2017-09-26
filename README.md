@@ -23,12 +23,12 @@ This is a wrapper for i3lock that adds additional functionality:
     </dd>
     <dt>--image-fill path</dt>
     <dd>
-        <p>Fills each screen with the image in <path>. Can be combined with
+        <p>Fills each screen with the image in &lt;path&gt;. Can be combined with
         --pixelate and --blur. Overrides --image-maximize.</p>
     </dd>
     <dt>--image-maximize path</dt>
     <dd>
-        <p>Maximizes the image in <path> over all screens. Can be combined with
+        <p>Maximizes the image in &lt;path&gt; over all screens. Can be combined with
         --pixelate and --blur. Overrides --image-fill.</p>
     </dd>
     <dt>--lock-icon [path]</dt>
