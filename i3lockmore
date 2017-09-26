@@ -14,6 +14,8 @@ BLUR_FACTOR=4
 USE_IMAGE_FILL=false
 USE_IMAGE_MAXIMIZE=false
 IMAGE=
+USE_LOCK_ICON=false
+LOCK_ICON="/usr/share/i3lockmore/lock-icon.png"
 
 
 function print_help {
@@ -45,6 +47,10 @@ This is a wrapper for i3lock that adds additional functionality:
     --image-maximize path
         Maximizes the image in <path> over all screens. Can be combined with
         --pixelate and --blur. Overrides --image-fill.
+
+    --lock-icon [path]
+        Adds a centered overlay to each screen. If no image is specified the
+        default lock icon in "/usr/share/i3lockmore/lock-icon.png" will be used.
 
     --grayscale
         Converts the background into grayscale. Requires --pixelate, --blur,
@@ -124,6 +130,14 @@ while [[ $# -gt 0 ]]; do
             fi
             ;;
 
+        --lock-icon)
+            USE_LOCK_ICON=true
+            if [[ $# -gt 1 && "$2" =~ ^[^-].*$ ]]; then
+                LOCK_ICON="$2"
+                shift
+            fi
+            ;;
+
         --grayscale)
             GRAYSCALE="-colorspace gray"
             ;;
@@ -151,7 +165,8 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 
-    shift # Consume argument
+    # Consume argument
+    shift
 done
 
 
@@ -179,7 +194,8 @@ if [[ "$USE_IMAGE_FILL" == true ]]; then
     if check_file_exists "$IMAGE"; then
         for screen in "${screens[@]}"; do
             convert "$BACKGROUND" \
-                "$IMAGE" -gravity center -resize ${screen%%+*}^ -gravity west -geometry +${screen#*+} -composite \
+                \( "$IMAGE" -gravity Center -resize ${screen%%+*}^ -extent ${screen%%+*} \) \
+                -gravity NorthWest -geometry +${screen#*+} -composite \
                 $GRAYSCALE -quality 11 png24:"$BACKGROUND"
         done
     fi
@@ -193,8 +209,7 @@ if [[ "$USE_IMAGE_MAXIMIZE" == true ]]; then
     screenarea=${screenarea// /}
 
     if check_file_exists "$IMAGE"; then
-        convert -size $screenarea xc:black \
-            "$IMAGE" -gravity center -resize $screenarea^ -composite \
+        convert "$IMAGE" -gravity Center -resize $screenarea^ -extent $screenarea \
             $GRAYSCALE -quality 11 png24:"$BACKGROUND"
     else
         convert -size $screenarea xc:black $GRAYSCALE -quality 11 png24:"$BACKGROUND"
@@ -215,6 +230,22 @@ if [[ "$USE_PIXELATE" == true ]]; then
 
     size=$(identify -format "%[fx:w]x%[fx:h]" "$BACKGROUND")
     convert "$BACKGROUND" -scale $PIXELATE_SCALEFACTOR% $GRAYSCALE -sample $size\! -quality 11 png24:"$BACKGROUND"
+fi
+
+
+if [[ "$USE_LOCK_ICON" == true ]]; then
+    make_screenshot
+
+    screens=( $(xrandr --current | grep -oP '\d+x\d+\+\d+\+\d+') )
+
+    if check_file_exists "$LOCK_ICON"; then
+        for screen in "${screens[@]}"; do
+            convert "$BACKGROUND" \
+                \( "$LOCK_ICON" -gravity Center -background none -extent ${screen%%+*} \) \
+                -gravity NorthWest -geometry +${screen#*+} -composite \
+                $GRAYSCALE -quality 11 png24:"$BACKGROUND"
+        done
+    fi
 fi
 
 

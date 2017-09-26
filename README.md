@@ -31,6 +31,11 @@ This is a wrapper for i3lock that adds additional functionality:
         <p>Maximizes the image in <path> over all screens. Can be combined with
         --pixelate and --blur. Overrides --image-fill.</p>
     </dd>
+    <dt>--lock-icon [path]</dt>
+    <dd>
+        <p>Adds a centered overlay to each screen. If no image is specified the
+        default lock icon in "/usr/share/i3lockmore/lock-icon.png" will be used.</p>
+    </dd>
     <dt>--grayscale</dt>
     <dd>
         <p>Converts the background into grayscale. Requires --pixelate, --blur,
