@@ -66,7 +66,7 @@ Following programs must be installed:
 
 ### Package
 
-There is a package available for Arch Linux in the [PKGBUILD branch](https://github.com/SammysHP/i3lockmore/tree/PKGBUILD) of this repository.
+A package for Arch Linux is available in the [AUR](https://aur.archlinux.org/packages/i3lockmore-git/) and in the [PKGBUILD branch](https://github.com/SammysHP/i3lockmore/tree/PKGBUILD) of this repository.
 
 
 ## License
