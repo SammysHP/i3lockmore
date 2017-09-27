@@ -20,49 +20,30 @@ LOCK_ICON="/usr/share/i3lockmore/lock-icon.png"
 
 function print_help {
 cat <<- EOF
-i3lockmore by Sven Greiner <sven@sammyshp.de>
-
-This is a wrapper for i3lock that adds additional functionality:
+Extension for the screenlocker "i3lock" adding some high-level features:
 
     --pixelate [scalefactor]
-        Uses the pixelated screen content as the background of the lockscreen.
-
-        The optional value "scalefactor" controls the size of the pixels. A value
-        of 1 results in large pixels while a value of 100 has no effect.
-        (It scales down the background to "scalefactor" percent of the original
-        screen content).
+        Pixelate the background of the lockscreen.
 
     --blur [scalefactor]
-        Uses the blurred screen content as the background of the lockscreen.
-
-        The optional value "scalefactor" controls the amount of blurring. A value
-        of 1 results in extreme blurring while a value of 100 has no effect.
-        (It scales down the background to "scalefactor" percent of the original
-        screen content).
+        Blur the background of the lockscreen.
 
     --image-fill path
-        Fills each screen with the image in <path>. Can be combined with
-        --pixelate and --blur. Overrides --image-maximize.
+        Fill each screen with the image in <path>.
 
     --image-maximize path
-        Maximizes the image in <path> over all screens. Can be combined with
-        --pixelate and --blur. Overrides --image-fill.
+        Maximize the image in <path> over all screens.
 
     --lock-icon [path]
-        Adds a centered overlay to each screen. If no image is specified the
-        default lock icon in "/usr/share/i3lockmore/lock-icon.png" will be used.
+        Add a centered overlay to each screen.
 
     --grayscale
-        Converts the background into grayscale. Requires --pixelate, --blur,
-        --image-fill or --image-maximize.
+        Convert the background into grayscale.
 
     --dpms timeout
         Uses DPMS to turn the screen off after "timeout" seconds of inactivity.
 
-        CAUTION: This sets --nofork (see "man i3lock") to restore the previous
-        value of the DPMS timeout after the screen was unlocked.
-
-All other arguments are passed to i3lock.
+All other arguments are passed to i3lock. Read the man page for more information.
 EOF
 }
 
@@ -154,7 +135,7 @@ while [[ $# -gt 0 ]]; do
             fi
             ;;
 
-        --morehelp)
+        -h|--help)
             print_help
             exit
             ;;

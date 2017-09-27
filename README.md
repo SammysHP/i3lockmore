@@ -2,55 +2,14 @@
 
 <div align="center"><img src="https://raw.githubusercontent.com/SammysHP/i3lockmore/readme-assets/i3lockmore.png" /></div>
 
-This is a wrapper for i3lock that adds additional functionality:
+i3lockmore is an extension for the screenlocker "i3lock" and adds some high-level features, mostly related to background images:
 
-<dl>
-    <dt>--pixelate [scalefactor]</dt>
-    <dd>
-        <p>Uses the pixelated screen content as the background of the lockscreen.</p>
-        <p>The optional value "scalefactor" controls the size of the pixels. A value
-        of 1 results in large pixels while a value of 100 has no effect.
-        (It scales down the background to "scalefactor" percent of the original
-        screen content).</p>
-    </dd>
-    <dt>--blur [scalefactor]</dt>
-    <dd>
-        <p>Uses the blurred screen content as the background of the lockscreen.</p>
-        <p>The optional value "scalefactor" controls the amount of blurring. A value
-        of 1 results in extreme blurring while a value of 100 has no effect.
-        (It scales down the background to "scalefactor" percent of the original
-        screen content).</p>
-    </dd>
-    <dt>--image-fill path</dt>
-    <dd>
-        <p>Fills each screen with the image in &lt;path&gt;. Can be combined with
-        --pixelate and --blur. Overrides --image-maximize.</p>
-    </dd>
-    <dt>--image-maximize path</dt>
-    <dd>
-        <p>Maximizes the image in &lt;path&gt; over all screens. Can be combined with
-        --pixelate and --blur. Overrides --image-fill.</p>
-    </dd>
-    <dt>--lock-icon [path]</dt>
-    <dd>
-        <p>Adds a centered overlay to each screen. If no image is specified the
-        default lock icon in "/usr/share/i3lockmore/lock-icon.png" will be used.</p>
-    </dd>
-    <dt>--grayscale</dt>
-    <dd>
-        <p>Converts the background into grayscale. Requires --pixelate, --blur,
-        --image-fill or --image-maximize.</p>
-    </dd>
-    <dt>--dpms timeout</dt>
-    <dd>
-        <p>Uses DPMS to turn the screen off after "timeout" seconds of inactivity.</p>
-        <p>CAUTION: This sets --nofork (see "man i3lock") to restore the previous
-        value of the DPMS timeout after the screen was unlocked.</p>
-    </dd>
-</dl>
+- pixelate or blur the current desktop or a provided image
+- fill each screen with an image or maximize an image over all screens
+- show a centered (lock) icon on each screen
+- turn off the screen via DPMS
 
-All other arguments are passed to i3lock.
-
+All other arguments are passed to i3lock. Read the man page for more information.
 
 ## Installation
 

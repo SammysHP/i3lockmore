@@ -1,0 +1,89 @@
+.TH i3lockmore 1
+
+
+.SH NAME
+i3lockmore \- additional features for i3lock
+
+
+.SH SYNOPSIS
+.BR i3lockmore\ ...
+
+
+.SH DESCRIPTION
+.B i3lockmore
+is an extension for the screenlocker "i3lock" and adds some high-level features, mostly related to background images.
+
+
+.SH OPTIONS
+
+.TP
+.BR \-\-pixelate\  [\fIscalefactor\fR]
+Pixelate the background of the lockscreen. By default the current screen content is used as background (see also
+.BR \-\-image-fill \ and\  \-\-image-maximize ).
+.IP
+The optional value
+.I scalefactor
+controls the size of the pixels. A value of 1 results in large pixels while a value of 100 has no effect. (It scales down the background to
+.I scalefactor
+percent of the original screen content).
+
+.TP
+.BR \-\-blur\  [\fIscalefactor\fR]
+--blur [scalefactor]
+Blur the background of the lockscreen. By default the current screen content is used as background (see also
+.BR \-\-image-fill \ and\  \-\-image-maximize ).
+.IP
+The optional value
+.I scalefactor
+controls the amount of blurring. A value of 1 results in extreme blurring while a value of 100 has no effect. (It scales down the background to
+.I scalefactor
+percent of the original screen content).
+
+.TP
+.BI \-\-image-fill\  path
+Fill each screen with the image in
+.IR path .
+Can be combined with
+.BR \-\-pixelate\  and\  \-\-blur .\ Overrides\  \-\-image-maximize .
+
+.TP
+.BI \-\-image-maximize\  path
+Maximize the image in
+.I path
+over all screens. Can be combined with
+.BR \-\-pixelate\  and\  \-\-blur .\ Overrides\  \-\-image-fill .
+
+.TP
+.BR \-\-lock-icon\  [\fIpath\fR]
+Add a centered overlay to each screen. If no image is specified the default lock icon in "/usr/share/i3lockmore/lock-icon.png" will be used. By default the current screen content is used as background (see also
+.BR \-\-image-fill \ and\  \-\-image-maximize ).
+
+.TP
+.B \-\-grayscale
+Convert the background into grayscale. Requires a background image (see
+.BR \-\-pixelate ,\  \-\-blur ,\  \-\-image-fill ,\  \-\-image-maximize ).
+
+.TP
+.BI --dpms\  timeout
+Use DPMS to turn the screen off after
+.I timeout
+seconds of inactivity.
+.IP
+CAUTION: This sets
+.BR \-\-nofork\  (see\  i3lock (1))
+to restore the previous value of the DPMS timeout after the screen was unlocked.
+
+.PP
+All other arguments are passed to i3lock.
+
+
+.SH SEE ALSO
+.BR i3lock (1)
+
+
+.SH AUTHOR
+Developed by Sven Karsten Greiner
+.RI < sven@sammyshp.de >
+and others.
+.PP
+This software is an open source-project and licensed under the MIT license.
