@@ -16,6 +16,7 @@ USE_IMAGE_MAXIMIZE=false
 IMAGE=
 USE_LOCK_ICON=false
 LOCK_ICON="/usr/share/i3lockmore/lock-icon.png"
+declare -a IMAGEMAGICK_CMD
 
 
 function print_help {
@@ -48,16 +49,9 @@ EOF
 }
 
 
-function get_background_file {
-    BACKGROUND=$(mktemp /tmp/i3lockmore-background.XXXXX)
-    PARAMS+=( -i "$BACKGROUND" )
-}
-
-
 function make_screenshot {
-    if [[ -z "$BACKGROUND" ]]; then
-        get_background_file
-        import -window root jpeg:"$BACKGROUND"
+    if ! is_background_set; then
+        IMAGEMAGICK_CMD=( x:'root' )
     fi
 }
 
@@ -68,6 +62,11 @@ function check_file_exists {
         return 1
     fi
     return 0
+}
+
+
+function is_background_set {
+    [[ ${#IMAGEMAGICK_CMD[@]} -ge 1 ]]
 }
 
 
@@ -164,36 +163,28 @@ trap finish EXIT
 
 
 if [[ "$USE_IMAGE_FILL" == true ]]; then
-    get_background_file
-
     screenarea=$(xrandr --current | grep -oP '(?<=current )\d+ x \d+')
     screenarea=${screenarea// /}
     screens=( $(xrandr --current | grep -oP '\d+x\d+\+\d+\+\d+') )
 
-    convert -size $screenarea xc:black $GRAYSCALE -quality 11 png24:"$BACKGROUND"
+    IMAGEMAGICK_CMD=( -size $screenarea xc:black )
 
     if check_file_exists "$IMAGE"; then
         for screen in "${screens[@]}"; do
-            convert "$BACKGROUND" \
-                \( "$IMAGE" -gravity Center -resize ${screen%%+*}^ -extent ${screen%%+*} \) \
-                -gravity NorthWest -geometry +${screen#*+} -composite \
-                $GRAYSCALE -quality 11 png24:"$BACKGROUND"
+            IMAGEMAGICK_CMD+=( \( "$IMAGE" -gravity Center -resize ${screen%%+*}^ -extent ${screen%%+*} \) -gravity NorthWest -geometry +${screen#*+} -composite )
         done
     fi
 fi
 
 
 if [[ "$USE_IMAGE_MAXIMIZE" == true ]]; then
-    get_background_file
-
     screenarea=$(xrandr --current | grep -oP '(?<=current )\d+ x \d+')
     screenarea=${screenarea// /}
 
     if check_file_exists "$IMAGE"; then
-        convert "$IMAGE" -gravity Center -resize $screenarea^ -extent $screenarea \
-            $GRAYSCALE -quality 11 png24:"$BACKGROUND"
+        IMAGEMAGICK_CMD=( "$IMAGE" -gravity Center -resize $screenarea^ -extent $screenarea )
     else
-        convert -size $screenarea xc:black $GRAYSCALE -quality 11 png24:"$BACKGROUND"
+        IMAGEMAGICK_CMD=( -size $screenarea xc:black )
     fi
 fi
 
@@ -201,16 +192,23 @@ fi
 if [[ "$USE_BLUR" == true ]]; then
     make_screenshot
 
-    size=$(identify -format "%[fx:w]x%[fx:h]" "$BACKGROUND")
-    convert "$BACKGROUND" -scale $BLUR_FACTOR% $GRAYSCALE -resize $size\! -quality 11 png24:"$BACKGROUND"
+    screenarea=$(xrandr --current | grep -oP '(?<=current )\d+ x \d+')
+    screenarea=${screenarea// /}
+
+    IMAGEMAGICK_CMD+=( -scale $BLUR_FACTOR% $GRAYSCALE -resize $screenarea\! )
 fi
 
 
 if [[ "$USE_PIXELATE" == true ]]; then
     make_screenshot
 
-    size=$(identify -format "%[fx:w]x%[fx:h]" "$BACKGROUND")
-    convert "$BACKGROUND" -scale $PIXELATE_SCALEFACTOR% $GRAYSCALE -sample $size\! -quality 11 png24:"$BACKGROUND"
+    screenarea=$(xrandr --current | grep -oP '(?<=current )\d+ x \d+')
+    screenarea=${screenarea// /}
+
+    IMAGEMAGICK_CMD+=( -scale $PIXELATE_SCALEFACTOR% $GRAYSCALE -sample $screenarea\! )
+
+    # This requires IM v7
+    # IMAGEMAGICK_CMD+=( -scale $PIXELATE_SCALEFACTOR% $GRAYSCALE -sample "%[width]x%[height]!" )
 fi
 
 
@@ -221,12 +219,17 @@ if [[ "$USE_LOCK_ICON" == true ]]; then
 
     if check_file_exists "$LOCK_ICON"; then
         for screen in "${screens[@]}"; do
-            convert "$BACKGROUND" \
-                \( "$LOCK_ICON" -gravity Center -background none -extent ${screen%%+*} \) \
-                -gravity NorthWest -geometry +${screen#*+} -composite \
-                $GRAYSCALE -quality 11 png24:"$BACKGROUND"
+            IMAGEMAGICK_CMD+=( \( "$LOCK_ICON" -gravity Center -background none -extent ${screen%%+*} \) -gravity NorthWest -geometry +${screen#*+} -composite )
         done
     fi
+fi
+
+
+if is_background_set; then
+    BACKGROUND=$(mktemp /tmp/i3lockmore-background.XXXXX)
+    PARAMS+=( -i "$BACKGROUND" )
+    IMAGEMAGICK_CMD+=( $GRAYSCALE -quality 11 png24:"$BACKGROUND" )
+    convert "${IMAGEMAGICK_CMD[@]}"
 fi
 
 
