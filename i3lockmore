@@ -7,6 +7,7 @@ USE_DPMS=false
 DPMS_TIMEOUT=5
 declare -a PARAMS
 DPMS_OLD=
+DPMS_OLD_DISABLED=
 BACKGROUND=
 GRAYSCALE=
 USE_BLUR=false
@@ -158,6 +159,7 @@ function finish {
 
     if [[ "$USE_DPMS" == true ]]; then
         xset dpms $DPMS_OLD
+        [[ -n $DPMS_OLD_DISABLED ]] && xset -dpms
     fi
 }
 trap finish EXIT
@@ -232,6 +234,7 @@ fi
 
 if [[ "$USE_DPMS" == true ]]; then
     DPMS_OLD=$(xset q | grep Standby | sed -n 's/\s*Standby: \([0-9]*\)\s*Suspend: \([0-9]*\)\s*Off: \([0-9]*\).*/\1 \2 \3/p')
+    DPMS_OLD_DISABLED=$(xset q | grep "DPMS is Disabled")
     xset dpms 0 0 $DPMS_TIMEOUT
 fi
 
