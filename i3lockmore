@@ -17,8 +17,12 @@ USE_IMAGE_MAXIMIZE=false
 IMAGE=
 USE_LOCK_ICON=false
 LOCK_ICON="/usr/share/i3lockmore/lock-icon.png"
-MAGICK_CMD=$(command -v convert)
-[ ! -L "$MAGICK_CMD" ] || MAGICK_CMD=$(command -v magick)
+
+MAGICK_CMD=convert
+if command -v magick &> /dev/null; then
+    MAGICK_CMD=magick
+fi
+
 
 function print_help {
 cat <<- EOF
@@ -173,17 +177,18 @@ if [[ "$USE_IMAGE_FILL" == true ]]; then
     screenarea=${screenarea// /}
     screens=( $(xrandr --current | grep -oP '\d+x\d+\+\d+\+\d+') )
 
-    "$MAGICK_CMD" -size $screenarea xc:black $GRAYSCALE -quality 11 png24:"$BACKGROUND"
+    $MAGICK_CMD -size $screenarea xc:black $GRAYSCALE -quality 11 png24:"$BACKGROUND"
 
     if check_file_exists "$IMAGE"; then
         for screen in "${screens[@]}"; do
-            "$MAGICK_CMD" "$BACKGROUND" \
+            $MAGICK_CMD "$BACKGROUND" \
                 \( "$IMAGE" -gravity Center -resize ${screen%%+*}^ -extent ${screen%%+*} \) \
                 -gravity NorthWest -geometry +${screen#*+} -composite \
                 $GRAYSCALE -quality 11 png24:"$BACKGROUND"
         done
     fi
 fi
+
 
 if [[ "$USE_IMAGE_MAXIMIZE" == true ]]; then
     get_background_file
@@ -192,10 +197,10 @@ if [[ "$USE_IMAGE_MAXIMIZE" == true ]]; then
     screenarea=${screenarea// /}
 
     if check_file_exists "$IMAGE"; then
-        "$MAGICK_CMD" "$IMAGE" -gravity Center -resize $screenarea^ -extent $screenarea \
+        $MAGICK_CMD "$IMAGE" -gravity Center -resize $screenarea^ -extent $screenarea \
             $GRAYSCALE -quality 11 png24:"$BACKGROUND"
     else
-        "$MAGICK_CMD" -size $screenarea xc:black $GRAYSCALE -quality 11 png24:"$BACKGROUND"
+        $MAGICK_CMD -size $screenarea xc:black $GRAYSCALE -quality 11 png24:"$BACKGROUND"
     fi
 fi
 
@@ -204,7 +209,7 @@ if [[ "$USE_BLUR" == true ]]; then
     make_screenshot
 
     size=$(identify -format "%[fx:w]x%[fx:h]" "$BACKGROUND")
-    "$MAGICK_CMD" "$BACKGROUND" -scale $BLUR_FACTOR% $GRAYSCALE -resize $size\! -quality 11 png24:"$BACKGROUND"
+    $MAGICK_CMD "$BACKGROUND" -scale $BLUR_FACTOR% $GRAYSCALE -resize $size\! -quality 11 png24:"$BACKGROUND"
 fi
 
 
@@ -212,7 +217,7 @@ if [[ "$USE_PIXELATE" == true ]]; then
     make_screenshot
 
     size=$(identify -format "%[fx:w]x%[fx:h]" "$BACKGROUND")
-    "$MAGICK_CMD" "$BACKGROUND" -scale $PIXELATE_SCALEFACTOR% $GRAYSCALE -sample $size\! -quality 11 png24:"$BACKGROUND"
+    $MAGICK_CMD "$BACKGROUND" -scale $PIXELATE_SCALEFACTOR% $GRAYSCALE -sample $size\! -quality 11 png24:"$BACKGROUND"
 fi
 
 
@@ -223,12 +228,11 @@ if [[ "$USE_LOCK_ICON" == true ]]; then
 
     if check_file_exists "$LOCK_ICON"; then
         for screen in "${screens[@]}"; do
-            "$MAGICK_CMD" "$BACKGROUND" \
+            $MAGICK_CMD "$BACKGROUND" \
                 \( "$LOCK_ICON" -gravity Center -background none -extent ${screen%%+*} \) \
                 -gravity NorthWest -geometry +${screen#*+} -composite \
                 $GRAYSCALE -quality 11 png24:"$BACKGROUND"
         done
-
     fi
 fi
 
